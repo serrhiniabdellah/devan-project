@@ -1,0 +1,91 @@
+=============================================================================
+EXAMPLE SESSION - LR Parser Demonstration
+=============================================================================
+
+$ make
+gcc -Wall -Wextra -g -std=c99 -c main.c
+gcc -Wall -Wextra -g -std=c99 -c loader.c
+gcc -Wall -Wextra -g -std=c99 -c tree.c
+gcc -Wall -Wextra -g -std=c99 -c stack.c
+gcc -Wall -Wextra -g -std=c99 -c engine.c
+gcc -Wall -Wextra -g -std=c99 -o lr_parser main.o loader.o tree.o stack.o engine.o
+
+$ ./lr_parser test3 "a+a*a" -v
+
+Loading grammar from: test3
+
+=== Grammar ===
+Axiom: E
+Rules:
+  1: E -> $E + $E
+  2: E -> $E * $E
+  3: E -> ( $E )
+  4: E -> a
+
+=== Parsing: a+a*a ===
+
+=== Parsing Trace ===
+Input: a+a*a
+
+Flot: a+a*a | Pile: 0 
+Action: SHIFT 3
+Flot: +a*a | Pile: 0 3 
+Action: REDUCE by rule 4: E -> a
+Current state after pop: 0, Looking for GOTO on E (0xc5)
+Table entry: 1
+GOTO: state 1
+Flot: +a*a | Pile: 0 1 
+Action: SHIFT 4
+Flot: a*a | Pile: 0 1 4 
+Action: SHIFT 3
+Flot: *a | Pile: 0 1 4 3 
+Action: REDUCE by rule 4: E -> a
+Current state after pop: 4, Looking for GOTO on E (0xc5)
+Table entry: 7
+GOTO: state 7
+Flot: *a | Pile: 0 1 4 7 
+Action: SHIFT 5
+Flot: a | Pile: 0 1 4 7 5 
+Action: SHIFT 3
+Flot: $ | Pile: 0 1 4 7 5 3 
+Action: REDUCE by rule 4: E -> a
+Current state after pop: 5, Looking for GOTO on E (0xc5)
+Table entry: 8
+GOTO: state 8
+Flot: $ | Pile: 0 1 4 7 5 8 
+Action: REDUCE by rule 2: E -> $E * $E
+Current state after pop: 4, Looking for GOTO on E (0xc5)
+Table entry: 7
+GOTO: state 7
+Flot: $ | Pile: 0 1 4 7 
+Action: REDUCE by rule 1: E -> $E + $E
+Current state after pop: 0, Looking for GOTO on E (0xc5)
+Table entry: 1
+GOTO: state 1
+Flot: $ | Pile: 0 1 
+
+ACCEPT
+
+Parse Tree:
+E(E(a())+()E(E(a())*()E(a())))
+
+Result: ACCEPT
+
+=============================================================================
+PARSE TREE VISUALIZATION
+=============================================================================
+
+        E
+       /|\
+      / | \
+     E  +  E
+     |    /|\
+     a   / | \
+        E  *  E
+        |     |
+        a     a
+
+This correctly shows: (a + (a * a))
+Multiplication has higher precedence!
+
+=============================================================================
